@@ -39,8 +39,6 @@ init_settings = {
     "presence_penalty": 0,
 }
 
-# embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
 def tiktoken_len(text):
     tokens = tiktoken.encoding_for_model("gpt-3.5-turbo").encode(
         text,
@@ -48,7 +46,6 @@ def tiktoken_len(text):
     return len(tokens)
 
 car_manual = PyMuPDFLoader(os.environ.get('pdfurl'))
-
 car_manual_data = car_manual.load()
 
 text_splitter = RecursiveCharacterTextSplitter(
@@ -66,8 +63,6 @@ rag_prompt = ChatPromptTemplate.from_template(RAG_PROMPT)
 
 model = ChatOpenAI(model="gpt-3.5-turbo")
 
-
-
 @cl.on_chat_start
 async def main():
     mecanic_qa_chain = (
@@ -77,8 +72,6 @@ async def main():
     )
 
     cl.user_session.set("runnable", mecanic_qa_chain)
-
-
 
 @cl.on_message
 async def on_message(message: cl.Message):
