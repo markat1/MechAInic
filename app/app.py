@@ -2,14 +2,11 @@ import chainlit as cl
 import tiktoken
 import os
 from dotenv import load_dotenv
-# from langchain.document_loaders import PyMuPDFLoader
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_openai import OpenAIEmbeddings
-# from langchain_community.chat_models import OpenAIEmbeddings
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain.vectorstores import Pinecone
 from langchain_community.vectorstores import Pinecone
 from operator import itemgetter
 from langchain.schema.runnable import RunnablePassthrough
@@ -73,21 +70,6 @@ model = ChatOpenAI(model="gpt-3.5-turbo")
 
 @cl.on_chat_start
 async def main():
-    # text_splitter = RecursiveCharacterTextSplitter(
-    # chunk_size = 400,
-    # chunk_overlap = 50,
-    # length_function = tiktoken_len)
-    
-    # car_manual_chunks = text_splitter.split_documents(car_manual_data)
-
-    # embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-    # vector_store = Pinecone.from_documents(car_manual_chunks, embedding_model, index_name=os.environ.get('index'))
-    # retriever = vector_store.as_retriever()
-
-    # rag_prompt = ChatPromptTemplate.from_template(RAG_PROMPT)
-
-    # model = ChatOpenAI(model="gpt-3.5-turbo")
-
     mecanic_qa_chain = (
         {"context": itemgetter("question") | retriever, "question": itemgetter("question")}
         | RunnablePassthrough.assign(context=itemgetter("context"))
