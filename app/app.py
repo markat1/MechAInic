@@ -11,6 +11,9 @@ from langchain_openai import OpenAIEmbeddings
 from operator import itemgetter
 from langchain.schema.runnable import RunnablePassthrough
 from langchain_openai import ChatOpenAI
+from langchain.schema.runnable.config import RunnableConfig
+from langchain_core.output_parsers import StrOutputParser
+
 
 
 load_dotenv()
@@ -46,12 +49,13 @@ def tiktoken_len(text):
     )
     return len(tokens)
 
+car_manual = PyMuPDFLoader(os.environ.get('pdfurl'))
+
+car_manual_data = car_manual.load()
+
+
 @cl.on_chat_start
 async def main():
-    car_manual = PyMuPDFLoader(os.environ.get('pdfurl'))
-
-    car_manual_data = car_manual.load()
-
     text_splitter = RecursiveCharacterTextSplitter(
     chunk_size = 400,
     chunk_overlap = 50,
@@ -61,7 +65,6 @@ async def main():
 
     embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
     vector_store = Pinecone.from_documents(car_manual_chunks, embedding_model, index_name=os.environ.get('index'))
-    # vector_store =  Pinecone.Index(os.environ.get('index'))
     retriever = vector_store.as_retriever()
 
     rag_prompt = ChatPromptTemplate.from_template(RAG_PROMPT)
@@ -71,7 +74,7 @@ async def main():
     mecanic_qa_chain = (
         {"context": itemgetter("question") | retriever, "question": itemgetter("question")}
         | RunnablePassthrough.assign(context=itemgetter("context"))
-        | {"response": rag_prompt | model, "context": itemgetter("context")}
+        | rag_prompt | model | StrOutputParser()
     )
 
     cl.user_session.set("runnable", mecanic_qa_chain)
@@ -81,7 +84,10 @@ async def main():
 @cl.on_message
 async def on_message(message: cl.Message):
     runnable = cl.user_session.get("runnable")
-    inputs = {"question": message.content}
-    result = await runnable.ainvoke(inputs)
-    msg = cl.Message(content=result["response"].content)
-    await msg.send()
+    msg = cl.Message(content="")
+
+    async for chunk in runnable.astream(
+        {"question":message.content},
+        config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
+    ):
+        await msg.stream_token(chunk)
