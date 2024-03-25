@@ -1,0 +1,10 @@
+chainlit==0.7.700
+cohere==4.37
+openai
+tiktoken
+python-dotenv==1.0.0
+langchain
+langchain-community
+langchain-openai
+pymupdf
+pinecone-client
