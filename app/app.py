@@ -2,9 +2,8 @@ import chainlit as cl
 import tiktoken
 import os
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_openai import OpenAIEmbeddings
-
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Pinecone
@@ -45,7 +44,8 @@ def tiktoken_len(text):
     )
     return len(tokens)
 
-car_manual = PyMuPDFLoader(os.environ.get('pdfurl'))
+car_manual = PyPDFLoader(os.environ.get('pdfurl'))
+
 car_manual_data = car_manual.load()
 
 text_splitter = RecursiveCharacterTextSplitter(

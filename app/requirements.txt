@@ -6,5 +6,5 @@ python-dotenv==1.0.0
 langchain
 langchain-community
 langchain-openai
-pymupdf
+pypdf
 pinecone-client
